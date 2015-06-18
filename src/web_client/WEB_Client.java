@@ -24,17 +24,21 @@ public class WEB_Client {
 
     public void connexion() {
         try {
+            System.out.println("Veuillez entrer l'adresse:");
             Scanner sc = new Scanner(System.in);
-            URL url = new URL(sc.nextLine());
+            String adIP = new String(sc.nextLine());
+            System.out.println("Veuillez entrer le fichier:");
+            String file = new String(sc.nextLine());
             String requete;
             
             //cree le socket
-            InetAddress ia = InetAddress.getByName(url.getHost());
+            InetAddress ia = InetAddress.getByName(adIP);
             socket = new Socket(ia,1026);
             socket.setSoTimeout(5000);
             //cree la requete
             OutputStream os = socket.getOutputStream();
-            requete = "GET " +"http://"+url.getHost()+":80/"+ url.getFilePath() + " HTTP/1.0\r\n";
+            requete = "GET " +"http://"+adIP+":80/"+ file + " HTTP/1.0\r\n";
+            System.out.println(requete);
             os.write(requete.getBytes());
             os.flush();
         } catch (UnknownHostException ex) {
@@ -46,7 +50,6 @@ public class WEB_Client {
     
     public String receive() throws IOException{
         BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
-        System.out.println("test");
         String data = "";
         byte[] buffer = new byte[512];
         int byteLu = 0;
