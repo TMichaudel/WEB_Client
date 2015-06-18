@@ -31,7 +31,7 @@ public class WEB_Client {
             //cree le socket
             InetAddress ia = InetAddress.getByName(url.getHost());
             socket = new Socket(ia,1026);
-            
+            socket.setSoTimeout(5000);
             //cree la requete
             OutputStream os = socket.getOutputStream();
             requete = "GET " +"http://"+url.getHost()+":80/"+ url.getFilePath() + " HTTP/1.0\r\n";
@@ -46,6 +46,7 @@ public class WEB_Client {
     
     public String receive() throws IOException{
         BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
+        System.out.println("test");
         String data = "";
         byte[] buffer = new byte[512];
         int byteLu = 0;
