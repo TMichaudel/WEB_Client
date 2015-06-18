@@ -11,18 +11,25 @@ package web_client;
  */
 public class URL {
 
-    String methode;
-    String machine;
-    String port;
-    String filePath;
+    private String host;
+    private String filePath;
 
     public URL(String adresse) {
-        String[] data = adresse.split(":", 3);
-        methode = data[0];
-        machine = data[1].substring(2);
-        port = data[2].split("/")[0];
-        filePath = data[2].split("/")[1];
-        
-        
+        String[] data = adresse.split("/", 2);
+        host = data[0];
+        if (data.length==2){
+            filePath = data[1];
+        }
+        else{
+            filePath ="";
+        }
+    }
+    
+    public String getHost(){
+        return this.host;
+    }
+    
+    public String getFilePath(){
+        return filePath;
     }
 }
