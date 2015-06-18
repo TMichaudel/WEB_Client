@@ -34,9 +34,7 @@ public class WEB_Client {
             
             //cree la requete
             OutputStream os = socket.getOutputStream();
-            requete = "GET " +"/"+ url.getFilePath() + " HTTP/1.0\r\n";
-            requete += "From: " + url.getHost() + "\r\n";
-            requete += "User-Agent : HTTPTool/1.0\r\n\r\n";
+            requete = "GET " +"http://"+url.getHost()+":80/"+ url.getFilePath() + " HTTP/1.0\r\n";
             os.write(requete.getBytes());
             os.flush();
         } catch (UnknownHostException ex) {
