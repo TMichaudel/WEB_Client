@@ -32,34 +32,26 @@ public class WEB_Client {
         try {
             String machine = "";
             String file = "";
-            String requete="";
-            
-            //AdresseIP + fichier
-            if (form.getUrl().isEmpty()) {
-                machine = form.getAdresseIP();
-                System.out.println("1");
-                file = form.getFile();
-            } else {//URL
-                String url = form.getUrl();
-                String[] data = url.split("/", 2);
-                machine = data[0];
-                if (data.length==2){
-                    file = data[1];
-                }
-                else{
-                    file ="/";
-                }
+            String requete = "";
+
+            //URL
+            String url = form.getUrl();
+            String[] data = url.split("/", 2);
+            machine = data[0];
+            if (data.length == 2) {
+                file = data[1];
+            } else {
+                file = "/";
             }
-            System.out.println(machine);
+            //cree la requete
+            requete = "GET http://" + machine + ":80/" + file + " HTTP/1.0\r\n";
+            form.setOutPut(requete);
             //cree le socket
             InetAddress ia = InetAddress.getByName(machine);
             socket = new Socket(ia, 1026);
             socket.setSoTimeout(10000);
             OutputStream os = socket.getOutputStream();
-            
-            //cree la requete
-            requete = "GET http://" + machine + ":80/" + file + " HTTP/1.0\r\n";
-            form.setOutPut(requete);
+
             os.write(requete.getBytes());
             os.flush();
         } catch (UnknownHostException ex) {
@@ -82,7 +74,7 @@ public class WEB_Client {
                 data += bloc;
             } while (byteLu == 512);
         } catch (SocketTimeoutException e) {
-            System.out.println("Connection timeout");
+            form.getPagePane().setText("Connection Timeout");
         }
 
         return data;
@@ -99,7 +91,7 @@ public class WEB_Client {
                 public void run() {
                     try {
                         interpretReponse(receive());
-                        //socket.close();
+                        socket.close();
                     } catch (IOException ex) {
                         Logger.getLogger(WEB_Client.class.getName()).log(Level.SEVERE, null, ex);
                     }
