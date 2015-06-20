@@ -5,6 +5,8 @@
  */
 package web_client;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
@@ -16,29 +18,48 @@ import java.util.logging.Logger;
  * @author Thibaud
  */
 public class WEB_Client {
-    
+
     private Socket socket;
-    
-    public WEB_Client(){
+    private ClientForm form;
+
+    public WEB_Client() {
+        form = new ClientForm();
+        form.getButtonObtenir().addActionListener(new GoButtonListener());
+        form.setVisible(true);
     }
 
     public void connexion() {
         try {
-            System.out.println("Veuillez entrer l'adresse:");
-            Scanner sc = new Scanner(System.in);
-            String adIP = new String(sc.nextLine());
-            System.out.println("Veuillez entrer le fichier:");
-            String file = new String(sc.nextLine());
-            String requete;
+            String machine = "";
+            String file = "";
+            String requete="";
             
+            //AdresseIP + fichier
+            if (form.getUrl().isEmpty()) {
+                machine = form.getAdresseIP();
+                System.out.println("1");
+                file = form.getFile();
+            } else {//URL
+                String url = form.getUrl();
+                String[] data = url.split("/", 2);
+                machine = data[0];
+                if (data.length==2){
+                    file = data[1];
+                }
+                else{
+                    file ="/";
+                }
+            }
+            System.out.println(machine);
             //cree le socket
-            InetAddress ia = InetAddress.getByName(adIP);
-            socket = new Socket(ia,1026);
-            socket.setSoTimeout(5000);
-            //cree la requete
+            InetAddress ia = InetAddress.getByName(machine);
+            socket = new Socket(ia, 1026);
+            socket.setSoTimeout(10000);
             OutputStream os = socket.getOutputStream();
-            requete = "GET " +"http://"+adIP+":80/"+ file + " HTTP/1.0\r\n";
-            System.out.println(requete);
+            
+            //cree la requete
+            requete = "GET http://" + machine + ":80/" + file + " HTTP/1.0\r\n";
+            form.setOutPut(requete);
             os.write(requete.getBytes());
             os.flush();
         } catch (UnknownHostException ex) {
@@ -47,14 +68,15 @@ public class WEB_Client {
             Logger.getLogger(WEB_Client.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public String receive() throws IOException{
-        BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
+
+    public String receive() throws IOException {
+        InputStream bis = socket.getInputStream();
         String data = "";
         byte[] buffer = new byte[512];
         int byteLu = 0;
         try {
             do {
+                System.out.println(bis.available());
                 byteLu = bis.read(buffer, 0, 512);
                 String bloc = new String(buffer, 0, byteLu);
                 data += bloc;
@@ -64,24 +86,41 @@ public class WEB_Client {
         }
 
         return data;
+
     }
-    
-    public void interpretReponse(String reponse){
-        System.out.println(reponse);
+
+    class GoButtonListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            connexion();
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        interpretReponse(receive());
+                        //socket.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(WEB_Client.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }.start();
+        }
+    }
+
+    public void interpretReponse(String reponse) {
+        String header = reponse.substring(0, reponse.indexOf("\r\n\r\n"));
+        String page = reponse.substring(reponse.indexOf("\r\n\r\n"));
+
+        System.out.println(header);
+        System.out.println(page);
     }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        try {
-            WEB_Client client = new WEB_Client();
-            client.connexion();
-            String reponse = client.receive();
-            client.interpretReponse(reponse);
-        } catch (IOException ex) {
-            System.out.println("erreur reception réponse");
-        }
+        WEB_Client client = new WEB_Client();
     }
 
 }
