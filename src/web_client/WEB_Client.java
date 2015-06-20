@@ -74,7 +74,7 @@ public class WEB_Client {
                 data += bloc;
             } while (byteLu == 512);
         } catch (SocketTimeoutException e) {
-            form.getPagePane().setText("Connection Timeout");
+            form.getPagePane().setText("<p>Connection Timeout</p>");
         }
 
         return data;
@@ -104,8 +104,8 @@ public class WEB_Client {
         String header = reponse.substring(0, reponse.indexOf("\r\n\r\n"));
         String page = reponse.substring(reponse.indexOf("\r\n\r\n"));
 
-        System.out.println(header);
-        System.out.println(page);
+        form.getHeaderPane().setText(header);
+        form.getPagePane().setText(page);
     }
 
     /**
