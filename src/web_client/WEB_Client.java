@@ -44,11 +44,12 @@ public class WEB_Client {
                 file = "/";
             }
             //cree la requete
-            requete = "GET http://" + machine + ":80/" + file + " HTTP/1.0\r\n";
+            requete = "GET " + file + " HTTP/1.0\r\n";
             form.setOutPut(requete);
             //cree le socket
             InetAddress ia = InetAddress.getByName(machine);
-            socket = new Socket(ia, 1026);
+            System.out.println(ia);
+            socket = new Socket(ia, 80);
             socket.setSoTimeout(10000);
             OutputStream os = socket.getOutputStream();
 
