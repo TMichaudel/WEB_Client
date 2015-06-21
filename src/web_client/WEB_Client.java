@@ -104,9 +104,38 @@ public class WEB_Client {
     public void interpretReponse(String reponse) {
         String header = reponse.substring(0, reponse.indexOf("\r\n\r\n"));
         String page = reponse.substring(reponse.indexOf("\r\n\r\n"));
+        String output[] = header.split(" ",3);
 
         form.getHeaderPane().setText(header);
         form.getPagePane().setText(page);
+        int code = Integer.parseInt(output[1]);
+        String msg= new String("");
+        switch (code / 100) {
+            case 1:
+                msg=("Infomation");
+                break;
+
+            case 2:
+                msg=("Succes");
+                break;
+
+            case 3:
+                msg=("Redirection");
+                break;
+
+            case 4:
+                msg=("Erreur Client");
+                break;
+
+            case 5:
+                msg=("Erreur Serveur");
+                break;
+             
+            default:
+                break;
+        }
+        msg+=(" : "+output[1]+", "+output[2].split("\n")[0]);
+        form.setOutPut(msg);
     }
 
     /**
