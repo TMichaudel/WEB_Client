@@ -102,12 +102,35 @@ public class WEB_Client {
     }
 
     public void interpretReponse(String reponse) {
+        String format,formatImage;
+        File file;
+        String[] type = null;
         String header = reponse.substring(0, reponse.indexOf("\r\n\r\n"));
         String page = reponse.substring(reponse.indexOf("\r\n\r\n"));
-        String output[] = header.split(" ",3);
 
         form.getHeaderPane().setText(header);
-        form.getPagePane().setText(page);
+        setOutput(header);
+        
+        if (header.contains("Content-type")) {
+            type = header.split(":");
+            format = type[1].substring(0, type[1].indexOf("\r\n"));
+        } else {
+            format = "text";
+        }
+        
+        if (format.contains("image/")){
+            formatImage = type[1].replace("image/", "");
+            file = new File ("image." + formatImage);
+            fichierImage(file,page);
+            form.getPagePane().setText(file.getPath());
+        }
+        else {
+            form.getPagePane().setText(page);
+        }
+    }
+    
+    public void setOutput(String header){
+        String output[] = header.split(" ",3);
         int code = Integer.parseInt(output[1]);
         String msg= new String("");
         switch (code / 100) {
@@ -136,6 +159,17 @@ public class WEB_Client {
         }
         msg+=(" : "+output[1]+", "+output[2].split("\n")[0]);
         form.setOutPut(msg);
+    }
+    
+    public void fichierImage(File f, String contenu){
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+            bw.write(contenu);
+            bw.flush();
+            bw.close();
+        } catch (IOException ex) {
+            form.setOutPut("Erreur de l'écriture de l'image.");
+        }
     }
 
     /**
