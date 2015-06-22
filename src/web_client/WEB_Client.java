@@ -43,16 +43,18 @@ public class WEB_Client {
             } else {
                 file = "/";
             }
-            //cree la requete
-            requete = "GET " + file + " HTTP/1.0\r\n";
-            form.setOutPut(requete);
             //cree le socket
             InetAddress ia = InetAddress.getByName(machine);
             System.out.println(ia);
             socket = new Socket(ia, 80);
-            socket.setSoTimeout(10000);
+            socket.setSoTimeout(4000);
             OutputStream os = socket.getOutputStream();
-
+            
+            //cree la requete
+            requete = "GET /" + file + " HTTP/1.0\r\n";
+            form.setOutPut(requete);
+            
+            //envoie la requete
             os.write(requete.getBytes());
             os.flush();
         } catch (UnknownHostException ex) {
@@ -91,7 +93,7 @@ public class WEB_Client {
                 @Override
                 public void run() {
                     try {
-                        interpretReponse(receive());
+                        getReponse(receive());
                         socket.close();
                     } catch (IOException ex) {
                         Logger.getLogger(WEB_Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -101,7 +103,7 @@ public class WEB_Client {
         }
     }
 
-    public void interpretReponse(String reponse) {
+    public void getReponse(String reponse) {
         String format,formatImage;
         File file;
         String[] type = null;
