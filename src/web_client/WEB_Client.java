@@ -104,7 +104,7 @@ public class WEB_Client {
     }
 
     public void getReponse(String reponse) {
-        String format="text", formatFichier = "txt", path = "C:\\Users\\mathieu\\Desktop\\Web\\";
+        String format="text", formatFichier = "txt", path = "C:\\Users\\Thibaud\\Desktop\\web\\";
         File file;
         String[] type = null;
 
@@ -129,20 +129,16 @@ public class WEB_Client {
         }
         
         //création du fichier suivant le format de la réponse
-        if (format.contains(" image/")) {
+        if (format.contains("image/")) {
             formatFichier = format.replace("image/", "");
             file = new File(path + "image." + formatFichier);
             ecritureFichier(file, page);
-            form.getPagePane().setText("L'image est enregistrée à : " + file.getPath() + "\r\n" + page);
+            form.getPagePane().setText("L'image est enregistrée à : " + file.getPath() + "\r\n");
         } else if (format.contains("text/")) {
             formatFichier = format.replace("text/", "");
             file = new File(path + "page." + formatFichier);
             ecritureFichier(file, page);
             form.getPagePane().setText("La page est enregistrée à : " + file.getPath() + "\r\n" + page);
-        } else if (format.contains("jpg")) {
-            file = new File(path + "image.jpg");
-            ecritureFichier(file, page);
-            form.getPagePane().setText("L'image se trouve à : " + file.getPath() + "\r\n" + page);
         } else {
             file = new File(path + "text." + formatFichier);
             System.out.println("formatFichier :"+formatFichier);
