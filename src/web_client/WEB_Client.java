@@ -49,11 +49,14 @@ public class WEB_Client {
             socket = new Socket(ia, 80);
             socket.setSoTimeout(4000);
             OutputStream os = socket.getOutputStream();
-            
+
             //cree la requete
-            requete = "GET /" + file + " HTTP/1.0\r\n";
+            requete = "GET /" + file +" HTTP/1.1\r\n";
+            requete += "Host: " + machine + ":" + socket.getPort() + "\r\n";
+            requete += "Connection: keep-alive"+"\r\n"+"\r\n";
             form.setOutPut(requete);
-            
+            System.out.println(requete);
+
             //envoie la requete
             os.write(requete.getBytes());
             os.flush();
@@ -104,7 +107,7 @@ public class WEB_Client {
     }
 
     public void getReponse(String reponse) {
-        String format,formatImage;
+        String format, formatImage;
         File file;
         String[] type = null;
         String header = reponse.substring(0, reponse.indexOf("\r\n\r\n"));
@@ -112,58 +115,57 @@ public class WEB_Client {
 
         form.getHeaderPane().setText(header);
         setOutput(header);
-        
+
         if (header.contains("Content-type")) {
             type = header.split(":");
             format = type[1].substring(0, type[1].indexOf("\r\n"));
         } else {
             format = "text";
         }
-        
-        if (format.contains("image/")){
+
+        if (format.contains("image/")) {
             formatImage = type[1].replace("image/", "");
-            file = new File ("image." + formatImage);
-            fichierImage(file,page);
+            file = new File("image." + formatImage);
+            fichierImage(file, page);
             form.getPagePane().setText(file.getPath());
-        }
-        else {
+        } else {
             form.getPagePane().setText(page);
         }
     }
-    
-    public void setOutput(String header){
-        String output[] = header.split(" ",3);
+
+    public void setOutput(String header) {
+        String output[] = header.split(" ", 3);
         int code = Integer.parseInt(output[1]);
-        String msg= new String("");
+        String msg = new String("");
         switch (code / 100) {
             case 1:
-                msg=("Infomation");
+                msg = ("Infomation");
                 break;
 
             case 2:
-                msg=("Succes");
+                msg = ("Succes");
                 break;
 
             case 3:
-                msg=("Redirection");
+                msg = ("Redirection");
                 break;
 
             case 4:
-                msg=("Erreur Client");
+                msg = ("Erreur Client");
                 break;
 
             case 5:
-                msg=("Erreur Serveur");
+                msg = ("Erreur Serveur");
                 break;
-             
+
             default:
                 break;
         }
-        msg+=(" : "+output[1]+", "+output[2].split("\n")[0]);
+        msg += (" : " + output[1] + ", " + output[2].split("\n")[0]);
         form.setOutPut(msg);
     }
-    
-    public void fichierImage(File f, String contenu){
+
+    public void fichierImage(File f, String contenu) {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(f));
             bw.write(contenu);
