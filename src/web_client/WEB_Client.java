@@ -40,20 +40,18 @@ public class WEB_Client {
             machine = data[0];
             if (data.length == 2) {
                 file = data[1];
-            } else {
-                file = "/";
             }
+
             //cree le socket
             InetAddress ia = InetAddress.getByName(machine);
-            System.out.println(ia);
             socket = new Socket(ia, 80);
             socket.setSoTimeout(4000);
             OutputStream os = socket.getOutputStream();
 
             //cree la requete
-            requete = "GET /" + file +" HTTP/1.1\r\n";
+            requete = "GET /" + file + " HTTP/1.1\r\n";
             requete += "Host: " + machine + ":" + socket.getPort() + "\r\n";
-            requete += "Connection: keep-alive"+"\r\n"+"\r\n";
+            requete += "Connection: Close" + "\r\n" + "\r\n";
             form.setOutPut(requete);
             System.out.println(requete);
 
@@ -74,11 +72,10 @@ public class WEB_Client {
         int byteLu = 0;
         try {
             do {
-                System.out.println(bis.available());
-                byteLu = bis.read(buffer, 0, 512);
+                byteLu = bis.read(buffer);
                 String bloc = new String(buffer, 0, byteLu);
                 data += bloc;
-            } while (byteLu == 512);
+            } while (bis.read()!=-1);
         } catch (SocketTimeoutException e) {
             form.getPagePane().setText("<p>Connection Timeout</p>");
         }
@@ -107,33 +104,55 @@ public class WEB_Client {
     }
 
     public void getReponse(String reponse) {
-        String format, formatImage;
+        String format="text", formatFichier = "txt", path = "C:\\Users\\mathieu\\Desktop\\Web\\";
         File file;
         String[] type = null;
+
+        //séparation entre header et le contenu de la page:
         String header = reponse.substring(0, reponse.indexOf("\r\n\r\n"));
-        String page = reponse.substring(reponse.indexOf("\r\n\r\n"));
-
+        String page = reponse.substring(reponse.indexOf("\r\n\r\n")+ 2);
         form.getHeaderPane().setText(header);
-        setOutput(header);
+        form.setOutPut(getCode(header));
 
-        if (header.contains("Content-type")) {
-            type = header.split(":");
-            format = type[1].substring(0, type[1].indexOf("\r\n"));
-        } else {
-            format = "text";
+        //récupération du format du fichier obtenu
+        if (header.contains("Content-Type")) {
+            type = header.split("Content-Type:");
+            if (type[1].contains("; charset")) {
+                format = type[1].substring(1, type[1].indexOf("; charset"));
+            }
+            else if (type[1].contains("\r\n")) {
+                format = type[1].substring(1, type[1].indexOf("\r\n"));
+            }
+            else {
+                format = type[1].substring(1);
+            }
         }
-
-        if (format.contains("image/")) {
-            formatImage = type[1].replace("image/", "");
-            file = new File("image." + formatImage);
-            fichierImage(file, page);
-            form.getPagePane().setText(file.getPath());
+        
+        //création du fichier suivant le format de la réponse
+        if (format.contains(" image/")) {
+            formatFichier = format.replace("image/", "");
+            file = new File(path + "image." + formatFichier);
+            ecritureFichier(file, page);
+            form.getPagePane().setText("L'image est enregistrée à : " + file.getPath() + "\r\n" + page);
+        } else if (format.contains("text/")) {
+            formatFichier = format.replace("text/", "");
+            file = new File(path + "page." + formatFichier);
+            ecritureFichier(file, page);
+            form.getPagePane().setText("La page est enregistrée à : " + file.getPath() + "\r\n" + page);
+        } else if (format.contains("jpg")) {
+            file = new File(path + "image.jpg");
+            ecritureFichier(file, page);
+            form.getPagePane().setText("L'image se trouve à : " + file.getPath() + "\r\n" + page);
         } else {
-            form.getPagePane().setText(page);
+            file = new File(path + "text." + formatFichier);
+            System.out.println("formatFichier :"+formatFichier);
+            ecritureFichier(file, page);
+            form.getPagePane().setText("La page est enregistrée à : " + file.getPath() + "\r\n" + page);
         }
+        System.out.println("Fichier enregistré !");
     }
 
-    public void setOutput(String header) {
+    public String getCode(String header) {
         String output[] = header.split(" ", 3);
         int code = Integer.parseInt(output[1]);
         String msg = new String("");
@@ -162,17 +181,17 @@ public class WEB_Client {
                 break;
         }
         msg += (" : " + output[1] + ", " + output[2].split("\n")[0]);
-        form.setOutPut(msg);
+        return msg;
     }
 
-    public void fichierImage(File f, String contenu) {
+    public void ecritureFichier(File f, String contenu) {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(f));
             bw.write(contenu);
-            bw.flush();
+            //bw.flush();
             bw.close();
         } catch (IOException ex) {
-            form.setOutPut("Erreur de l'écriture de l'image.");
+            form.setOutPut("Erreur de l'écriture du fichier.");
         }
     }
 
