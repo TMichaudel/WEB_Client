@@ -44,7 +44,7 @@ public class WEB_Client {
 
             //cree le socket
             InetAddress ia = InetAddress.getByName(machine);
-            socket = new Socket(ia, 80);
+            socket = new Socket(ia, 225);
             socket.setSoTimeout(4000);
             OutputStream os = socket.getOutputStream();
 
